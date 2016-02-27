@@ -2,13 +2,34 @@
 //  SparseMatrix.hpp
 //  
 //
-//  Created by greyson on 2/27/16.
+//  Created by Greyson Wright on 2/27/16.
 //
 //
 
-#ifndef SparseMatrix_hpp
-#define SparseMatrix_hpp
+#ifndef SparseMatrix_h
+#define SparseMatrix_h
 
-#include <stdio.h>
+#include <iostream>
+#include <fstream>
 
-#endif /* SparseMatrix_hpp */
+#endif
+
+class Element
+{
+public:
+	Element();
+	~Element();
+};
+
+class SparseMatrix {
+public:
+	friend std::ostream& operator<<(std::ostream &os, const SparseMatrix &obj);
+	friend std::istream& operator>>(std::istream &is, const SparseMatrix &obj);
+	friend SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right);
+	friend SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right);
+	friend SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right);
+	SparseMatrix();
+	~SparseMatrix();
+};
+
+

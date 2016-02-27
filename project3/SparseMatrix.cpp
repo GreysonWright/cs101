@@ -2,8 +2,10 @@
 //  SparseMatrix.cpp
 //  
 //
-//  Created by greyson on 2/27/16.
+//  Created by Greyson Wright on 2/27/16.
 //
 //
 
-#include "SparseMatrix.hpp"
+#include "SparseMatrix.h"
+
+
