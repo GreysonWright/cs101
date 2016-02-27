@@ -14,22 +14,27 @@
 
 #endif
 
-class Element
-{
+class Element {
 public:
+	float value;
+	Element *prev;
+	Element *next;
+
 	Element();
 	~Element();
 };
 
 class SparseMatrix {
 public:
-	friend std::ostream& operator<<(std::ostream &os, const SparseMatrix &obj);
-	friend std::istream& operator>>(std::istream &is, const SparseMatrix &obj);
+	Element *elements;
+
 	friend SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right);
 	friend SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right);
 	friend SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right);
+
 	SparseMatrix();
 	~SparseMatrix();
 };
 
-
+std::ostream &operator<<(std::ostream &os, const SparseMatrix &matrix);
+std::istream &operator>>(std::istream &is, const SparseMatrix &matrix);
