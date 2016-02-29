@@ -215,28 +215,33 @@ std::istream &operator>>(std::istream &is, SparseMatrix &matrix) {
 	// currElement->next = NULL;
 	// return is;
 
-	Element *currElement = new Element();
-	Element *matrixElement = matrix.elements;
+	Element *newElement = new Element();
+	// Element *matrixElement = matrix.elements;
+	Element *currElement = matrix.elements;
 
 	while(is) {
-		is >> currElement->row;
-		is >> currElement->col;
-		is >> currElement->value;
+		is >> newElement->row;
+		is >> newElement->col;
+		is >> newElement->value;
 
-		if (matrix.elements == NULL) {
-			matrix.element = currElement;
-			currElement->next = new Element();
-			currElement->next->prev = currElement;
-			currElement = currElement->next;	
-		}
+		while(currElement) {
+			if (matrix.elements == NULL) {
+				matrix.elements = newElement;
+				newElement->next = new Element();
+				newElement->next->prev = newElement;
+			}
 
-		if (currElement) {
+			if (currElement->next && newElement->row < currElement->row) {
+				newElement->next = currElement->next;
+				newElement->prev = currElement;
+			}
 
+			newElement = newElement->next;	
 		}
 	}
-	currElement = currElement->prev;
-	delete currElement->next;
-	currElement->next = NULL;
+	newElement = newElement->prev;
+	delete newElement->next;
+	newElement->next = NULL;
 
 	return is;
 }
