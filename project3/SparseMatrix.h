@@ -16,12 +16,14 @@
 
 class Element {
 public:
-	float value;
+	int row;
+	int col;
+	double value;
 	Element *prev;
 	Element *next;
 
-	Element();
-	~Element();
+	// Element();
+	// ~Element();
 };
 
 class SparseMatrix {
@@ -33,8 +35,8 @@ public:
 	friend SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right);
 
 	SparseMatrix();
-	~SparseMatrix();
+	void addElement(int row, int col, double val, Element &list);
 };
 
-std::ostream &operator<<(std::ostream &os, const SparseMatrix &matrix);
-std::istream &operator>>(std::istream &is, const SparseMatrix &matrix);
+std::ostream &operator<<(std::ostream &os, SparseMatrix &matrix);
+std::istream &operator>>(std::istream &is, SparseMatrix &matrix);
