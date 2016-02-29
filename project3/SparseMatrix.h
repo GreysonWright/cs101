@@ -22,8 +22,6 @@ public:
 	Element *prev;
 	Element *next;
 
-	// Element();
-	// ~Element();
 };
 
 class SparseMatrix {
@@ -35,7 +33,6 @@ public:
 	friend SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right);
 
 	SparseMatrix();
-	void addElement(int row, int col, double val, Element &list);
 };
 
 std::ostream &operator<<(std::ostream &os, SparseMatrix &matrix);

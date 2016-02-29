@@ -71,9 +71,9 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 	resultMatrix.elements = new Element();
 
 	Element *resultElement = resultMatrix.elements;
-	Element *rightElement = left.elements;
-	Element *leftElement = right.elements;
-	double difference = 0;
+	Element *rightElement = right.elements;
+	Element *leftElement = left.elements;
+	double difference = 0.0;
 
 	while(rightElement && leftElement) {
 		difference = leftElement->value - rightElement->value;
@@ -104,14 +104,14 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 			} else {
 				resultElement->row = leftElement->row;
 				resultElement->col = leftElement->col;
-				resultElement->value = leftElement->value * -1;
+				resultElement->value = leftElement->value;
 				resultElement->next = new Element();
 				resultElement->next->prev = resultElement;
 				resultElement = resultElement->next;
 
 				resultElement->row = rightElement->row;
 				resultElement->col = rightElement->col;
-				resultElement->value = rightElement->value;
+				resultElement->value = rightElement->value * -1;
 				resultElement->next = new Element();
 				resultElement->next->prev = resultElement;
 				resultElement = resultElement->next;
@@ -130,7 +130,53 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 }
 
 SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
-	
+	SparseMatrix resultMatrix;
+	resultMatrix.elements = new Element();
+
+	Element *resultElement = resultMatrix.elements;
+	Element *rightElement = right.elements;
+	Element *leftElement = left.elements;
+	double dotProduct = 0.0;
+	int col = 0;
+	// Element *currRightElement = rightElement;
+	Element *currLeftElement = leftElement;
+
+	while(leftElement) {
+		if (leftElement->next) {
+			while(rightElement) {
+				if (rightElement->next) {
+					if (leftElement->col == rightElement->row) {
+						dotProduct += leftElement->value * rightElement->value;
+						col = rightElement->col;
+					}
+				}
+				rightElement = rightElement->next;
+				currLeftElement = left.elements;
+			}
+		}
+
+		if (leftElement && dotProduct != 0) {
+			if (leftElement->row != 0 && leftElement->col != 0) {
+				resultElement->row = leftElement->col;
+				resultElement->col = col;
+				resultElement->value = dotProduct;
+				resultElement->next = new Element();
+				resultElement->next->prev = resultElement;
+				resultElement = resultElement->next;
+				dotProduct = 0.0;
+			}
+		}
+
+		leftElement = leftElement->next;
+		rightElement = right.elements;
+	}
+
+	resultElement->row = 0;
+	resultElement->col = 0;
+	resultElement->value = 0;
+	resultElement->next = NULL;
+
+	return resultMatrix;
 }
 
 SparseMatrix::SparseMatrix() {

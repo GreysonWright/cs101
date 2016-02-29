@@ -15,11 +15,11 @@ int main(int argc, char **argv) {
     string op(argv[1]);
     if (op=="add") m=m1+m2;
     else if (op=="sub") m=m1-m2;
-    // else if (op=="mul") m=m1*m2;
-    // else {
-    //     cerr << "No such operation" << endl;
-    //     return 1;
-    // }
+    else if (op=="mul") m=m1*m2;
+    else {
+        cerr << "No such operation" << endl;
+        return 1;
+    }
 
     ofstream outfile(argv[4]);
 
