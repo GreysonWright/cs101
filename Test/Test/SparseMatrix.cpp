@@ -15,18 +15,19 @@ Element::Element() {
 	this->next = NULL;
 }
 
-Element::Element(int row, int col, double value, Element *next) {
+Element::Element(int row, int col, double value, Element *next, Element *prev) {
 	this->row = row;
 	this->col = col;
 	this->value = value;
 	this->next = next;
+	this->prev = prev;
 }
 
 // Private Functions
 Element *add(int row, int col, double value, Element *list) {
-	Element *back = list;
-	Element *currElement = back;
-	Element *newElement = new Element(row, col, value, NULL);
+	Element *prev = list;
+	Element *currElement = prev;
+	Element *newElement = new Element(row, col, value, NULL, NULL);
 	
 	if (list) {
 		if (row < list->row) {
@@ -35,11 +36,12 @@ Element *add(int row, int col, double value, Element *list) {
 		}
 		
 		while (currElement && row >= currElement->row) {
-			back = currElement;
+			prev = currElement;
 			currElement = currElement->next;
 		}
 		newElement->next = currElement;
-		back->next = newElement;
+		prev->next = newElement;
+		newElement->prev = prev;
 		
 		return list;
 	}
@@ -48,25 +50,7 @@ Element *add(int row, int col, double value, Element *list) {
 }
 
 Element *add(Element *element, Element *list) {
-	Element *back = list;
-	Element *currElement = back;
-	Element *newElement = new Element(element->row, element->col, element->value, NULL);
-	
-	if (list) {
-		if (element->row < list->row) {
-			newElement->next = list;
-			return newElement;
-		}
-		
-		while (currElement && element->row >= currElement->row) {
-			back = currElement;
-			currElement = currElement->next;
-		}
-		newElement->next = currElement;
-		back->next = newElement;
-		
-		return list;
-	}
+	Element *newElement = add(element->row, element->col, element->value, list);
 	
 	return newElement;
 }
@@ -87,8 +71,13 @@ SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 			resultMatrix.elements = add(leftElement, resultMatrix.elements);
 			resultMatrix.elements = add(rightElement, resultMatrix.elements);
 		}
-		rightElement = rightElement->next;
-		leftElement = leftElement->next;
+		
+		if (rightElement) {
+			rightElement = rightElement->next;
+		}
+		if (leftElement) {
+			leftElement = leftElement->next;
+		}
 	}
 	
 	return resultMatrix;
@@ -116,8 +105,13 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 			resultMatrix.elements = add(leftElement, resultMatrix.elements);
 			resultMatrix.elements = add(rightElement, resultMatrix.elements);
 		}
-		rightElement = rightElement->next;
-		leftElement = leftElement->next;
+		
+		if (rightElement) {
+			rightElement = rightElement->next;
+		}
+		if (leftElement) {
+			leftElement = leftElement->next;
+		}
 	}
 	
 	return resultMatrix;
@@ -127,25 +121,37 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
 	Element *leftElement = left.elements;
 	Element *rightElement = right.elements;
+	Element *currElement = left.elements;
 	int col = 0;
 	int row = 0;
 	int currRow = 0;
 	double dotProduct = 0.0;
-
+	
 	while (leftElement) {
 		if (leftElement->row != currRow) {
 			currRow = leftElement->row;
-			
 			resultMatrix.elements = add(leftElement->row, col, dotProduct, resultMatrix.elements);
 			dotProduct = 0.0;
 		}
 		
+		currElement = left.elements;
 		while (rightElement) {
-			if (leftElement->col == rightElement->row) {
+			while (currElement) {
+				if (currElement->col == leftElement->col) {
+					break;
+				} else if (currElement->next == NULL && currElement->col != leftElement->col) {
+					currRow = leftElement->row;
+					resultMatrix.elements = add(leftElement->row, col, dotProduct, resultMatrix.elements);
+					dotProduct = 0.0;
+				}
+				currElement = currElement->next;
+			}
+			if (currElement && currElement->col == rightElement->row) {
 				currRow = leftElement->row;
 				col = rightElement->col;
 				row = leftElement->col;
-				dotProduct += leftElement->value * rightElement->value;
+				dotProduct += currElement->value * rightElement->value;
+				currElement = currElement->next;
 			}
 			
 			rightElement = rightElement->next;

@@ -19,11 +19,11 @@ public:
 	int row;
 	int col;
 	double value;
-//	Element *prev;
+	Element *prev;
 	Element *next;
 
 	Element();
-	Element(int row, int col, double value, Element *next);
+	Element(int row, int col, double value, Element *next, Element *prev);
 	
 };
 
