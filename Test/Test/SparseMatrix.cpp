@@ -74,9 +74,6 @@ Element *add(Element *element, Element *list) {
 // SparseMatrix Public Methods
 SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 	SparseMatrix resultMatrix;
-	//	resultMatrix.elements = new Element();
-	
-	//	Element *resultElement = resultMatrix.elements;
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
 	
@@ -128,44 +125,40 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 
 SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
-	resultMatrix.elements = new Element();
-	
-	Element *resultElement = resultMatrix.elements;
-	Element *rightElement = right.elements;
 	Element *leftElement = left.elements;
-	double dotProduct = 0.0;
+	Element *rightElement = right.elements;
 	int col = 0;
-	// Element *currRightElement = rightElement;
-	Element *currLeftElement = leftElement;
-	
-	while(leftElement) {
-		if (leftElement->next) {
-			while(rightElement) {
-				if (rightElement->next) {
-					if (leftElement->col == rightElement->row) {
-						dotProduct += leftElement->value * rightElement->value;
-						col = rightElement->col;
-					}
-				}
-				rightElement = rightElement->next;
-				currLeftElement = left.elements;
-			}
+	int row = 0;
+	int currRow = 0;
+	double dotProduct = 0.0;
+
+	while (leftElement) {
+		if (leftElement->row != currRow) {
+			currRow = leftElement->row;
+			
+			resultMatrix.elements = add(leftElement->row, col, dotProduct, resultMatrix.elements);
+			dotProduct = 0.0;
 		}
 		
-		if (leftElement && dotProduct != 0) {
-			if (leftElement->row != 0 && leftElement->col != 0) {
-				resultElement->row = leftElement->col;
-				resultElement->col = col;
-				resultElement->value = dotProduct;
-				resultElement->next = new Element();
-				//				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-				dotProduct = 0.0;
+		while (rightElement) {
+			if (leftElement->col == rightElement->row) {
+				currRow = leftElement->row;
+				col = rightElement->col;
+				row = leftElement->col;
+				dotProduct += leftElement->value * rightElement->value;
 			}
+			
+			rightElement = rightElement->next;
 		}
 		
-		leftElement = leftElement->next;
 		rightElement = right.elements;
+		leftElement = leftElement->next;
+		
+	}
+	
+	if (dotProduct != 0.0) {
+		resultMatrix.elements = add(row, col, dotProduct, resultMatrix.elements);
+		dotProduct = 0.0;
 	}
 	
 	return resultMatrix;
@@ -189,7 +182,6 @@ std::ostream &operator<<(std::ostream &os, SparseMatrix &matrix) {
 }
 
 std::istream &operator>>(std::istream &is, SparseMatrix &matrix) {
-	
 	int row = 0;
 	int col = 0;
 	double value = 0.0;
