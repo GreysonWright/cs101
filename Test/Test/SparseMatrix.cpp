@@ -117,54 +117,57 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 	return resultMatrix;
 }
 
+struct Key {
+	int col;
+	int row;
+};
+
 SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
 	Element *leftElement = left.elements;
 	Element *rightElement = right.elements;
-	Element *currElement = left.elements;
+	std::vector<Element> products;
+	std::vector<Element> dotProducts;
 	int col = 0;
 	int row = 0;
+	int currCol = 0;
 	int currRow = 0;
-	double dotProduct = 0.0;
+	double product = 0.0;
 	
 	while (leftElement) {
-		if (leftElement->row != currRow) {
-			currRow = leftElement->row;
-			resultMatrix.elements = add(leftElement->row, col, dotProduct, resultMatrix.elements);
-			dotProduct = 0.0;
-		}
-		
-		currElement = left.elements;
 		while (rightElement) {
-			while (currElement) {
-				if (currElement->col == leftElement->col) {
-					break;
-				} else if (currElement->next == NULL && currElement->col != leftElement->col) {
+			if (leftElement->col == rightElement->row) {
+				product = leftElement->value * rightElement->value;
+				if (product != 0) {
 					currRow = leftElement->row;
-					resultMatrix.elements = add(leftElement->row, col, dotProduct, resultMatrix.elements);
-					dotProduct = 0.0;
+					col = rightElement->col;
+					row = leftElement->col;
+					Element newElement = Element(leftElement->row, rightElement->col, product, NULL, NULL);
+					products.push_back(newElement);
+					product = 0.0;
 				}
-				currElement = currElement->next;
-			}
-			if (currElement && currElement->col == rightElement->row) {
-				currRow = leftElement->row;
-				col = rightElement->col;
-				row = leftElement->col;
-				dotProduct += currElement->value * rightElement->value;
-				currElement = currElement->next;
 			}
 			
 			rightElement = rightElement->next;
 		}
-		
 		rightElement = right.elements;
 		leftElement = leftElement->next;
 		
 	}
 	
-	if (dotProduct != 0.0) {
-		resultMatrix.elements = add(row, col, dotProduct, resultMatrix.elements);
-		dotProduct = 0.0;
+	//nested loop that combines all the elements with like rows and columns
+	//maybe buiild a linked list of products instead of a vector then wen a product is combined it can be deleted from the list
+	for (int i = 0; i < products.size(); ++i) {
+		for (int p = 0; p < products.size(); ++p) {
+			if (products[p].row == products[i].row && products[p].col == products[i].col) {
+				products[i].value += products[p].value;
+				products[p].value = 0;
+			}
+		}
+	}
+	
+	for (Element test : products) {
+		std::cout << test.row << " " << test.col << " " << test.value << std::endl;
 	}
 	
 	return resultMatrix;

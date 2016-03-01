@@ -35,3 +35,58 @@ SparseMatrix resultMatrix;
 	}
 	
 	return resultMatrix;
+
+
+
+
+
+	SparseMatrix resultMatrix;
+	Element *leftElement = left.elements;
+	Element *rightElement = right.elements;
+	Element *currElement = left.elements;
+	int col = 0;
+	int row = 0;
+	int currRow = 0;
+	double dotProduct = 0.0;
+	
+	while (leftElement) {
+		if (leftElement->row != currRow) {
+			currRow = leftElement->row;
+			resultMatrix.elements = add(leftElement->row, col, dotProduct, resultMatrix.elements);
+			dotProduct = 0.0;
+		}
+		
+		currElement = left.elements;
+		while (rightElement) {
+			while (currElement) {
+				if (currElement->col == leftElement->col) {
+					break;
+				} else if (currElement->next == NULL && currElement->col != leftElement->col) {
+					currRow = leftElement->row;
+					resultMatrix.elements = add(leftElement->row, col, dotProduct, resultMatrix.elements);
+					dotProduct = 0.0;
+				}
+				currElement = currElement->next;
+			}
+			if (currElement && currElement->col == rightElement->row) {
+				currRow = leftElement->row;
+				col = rightElement->col;
+				row = leftElement->col;
+				dotProduct += currElement->value * rightElement->value;
+				currElement = currElement->next;
+			}
+			
+			rightElement = rightElement->next;
+		}
+		
+		rightElement = right.elements;
+		leftElement = leftElement->next;
+		
+	}
+	
+	if (dotProduct != 0.0) {
+		resultMatrix.elements = add(row, col, dotProduct, resultMatrix.elements);
+		dotProduct = 0.0;
+	}
+	
+	return resultMatrix;
