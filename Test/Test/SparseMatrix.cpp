@@ -151,8 +151,7 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 		for (int p = 0; p < products.size(); ++p) {
 			if (products[p].row == products[i].row && products[p].col == products[i].col) {
 				products[i].value += products[p].value;
-				products[p].value = 0;
-				products.erase(products.begin() + p);
+//				products.erase(products.begin() + p);
 			}
 		}
 	}
