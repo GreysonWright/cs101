@@ -127,11 +127,6 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	Element *leftElement = left.elements;
 	Element *rightElement = right.elements;
 	std::vector<Element> products;
-	std::vector<Element> dotProducts;
-	int col = 0;
-	int row = 0;
-	int currCol = 0;
-	int currRow = 0;
 	double product = 0.0;
 	
 	while (leftElement) {
@@ -139,9 +134,6 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 			if (leftElement->col == rightElement->row) {
 				product = leftElement->value * rightElement->value;
 				if (product != 0) {
-					currRow = leftElement->row;
-					col = rightElement->col;
-					row = leftElement->col;
 					Element newElement = Element(leftElement->row, rightElement->col, product, NULL, NULL);
 					products.push_back(newElement);
 					product = 0.0;
@@ -155,19 +147,18 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 		
 	}
 	
-	//nested loop that combines all the elements with like rows and columns
-	//maybe buiild a linked list of products instead of a vector then wen a product is combined it can be deleted from the list
 	for (int i = 0; i < products.size(); ++i) {
 		for (int p = 0; p < products.size(); ++p) {
 			if (products[p].row == products[i].row && products[p].col == products[i].col) {
 				products[i].value += products[p].value;
 				products[p].value = 0;
+				products.erase(products.begin() + p);
 			}
 		}
 	}
 	
-	for (Element test : products) {
-		std::cout << test.row << " " << test.col << " " << test.value << std::endl;
+	for (Element element : products) {
+		resultMatrix.elements = add(element.row, element.col, element.value, resultMatrix.elements);
 	}
 	
 	return resultMatrix;
