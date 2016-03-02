@@ -43,6 +43,7 @@ Element *add(int row, int col, double value, Element *list) {
 		}
 		if (isHead) {
 			newElement->next = currElement;
+			currElement->prev = newElement;
 			return newElement;
 		}
 		
@@ -67,55 +68,79 @@ SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 	SparseMatrix resultMatrix;
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
+	Element *element;
+	Element *head;
 	
-	while(leftElement && rightElement) {
-		if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
-			resultMatrix.elements = add(rightElement->row, rightElement->col, leftElement->value + rightElement->value, resultMatrix.elements);
-		} else {
-			resultMatrix.elements = add(leftElement, resultMatrix.elements);
-			resultMatrix.elements = add(rightElement, resultMatrix.elements);
+	while(true) {
+		if (!rightElement && !leftElement) {
+			break;
 		}
 		
 		if (rightElement) {
+			resultMatrix.elements = add(rightElement, resultMatrix.elements);
 			rightElement = rightElement->next;
 		}
 		if (leftElement) {
+			resultMatrix.elements = add(leftElement, resultMatrix.elements);
 			leftElement = leftElement->next;
 		}
 	}
+	
+	element = resultMatrix.elements;
+	head = element;
+	
+	while (element) {
+		if (element->next && element->next->row == element->row && element->next->col == element->col) {
+			element->value += element->next->value;
+			if (element->next->next) {
+				element->next->next->prev = element;
+			}
+			element->next = element->next->next;
+		}
+		element = element->next;
+	}
+	resultMatrix.elements = head;
 	
 	return resultMatrix;
 }
 
 SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
-	Element *rightElement = right.elements;
-	Element *leftElement = left.elements;
-	double difference = 0.0;
+	Element *rightElement = left.elements;
+	Element *leftElement = right.elements;
+	Element *element;
+	Element *head;
 	
-	while(rightElement && leftElement) {
-		difference = leftElement->value - rightElement->value;
-		if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
-			if (difference != 0) {
-				resultMatrix.elements = add(rightElement->row, rightElement->col, difference, resultMatrix.elements);
-			}
-		} else if (rightElement->col > leftElement->col) {
-			resultMatrix.elements = add(leftElement, resultMatrix.elements);
-			rightElement->value *= -1;
-			resultMatrix.elements = add(rightElement, resultMatrix.elements);
-		} else {
-			leftElement->value *= -1;
-			resultMatrix.elements = add(leftElement, resultMatrix.elements);
-			resultMatrix.elements = add(rightElement, resultMatrix.elements);
+	while(true) {
+		if (!rightElement && !leftElement) {
+			break;
 		}
 		
 		if (rightElement) {
+			resultMatrix.elements = add(rightElement, resultMatrix.elements);
 			rightElement = rightElement->next;
 		}
 		if (leftElement) {
+			leftElement->value *= -1;
+			resultMatrix.elements = add(leftElement, resultMatrix.elements);
 			leftElement = leftElement->next;
 		}
 	}
+	
+	element = resultMatrix.elements;
+	head = element;
+	
+	while (element) {
+		if (element->next && element->next->row == element->row && element->next->col == element->col) {
+			element->value += element->next->value;
+			if (element->next->next) {
+				element->next->next->prev = element;
+			}
+			element->next = element->next->next;
+		}
+		element = element->next;
+	}
+	resultMatrix.elements = head;
 	
 	return resultMatrix;
 }
@@ -170,7 +195,9 @@ std::ostream &operator<<(std::ostream &os, SparseMatrix &matrix) {
 	Element *currElement = matrix.elements;
 	
 	while(currElement) {
-		os << currElement->row << " " << currElement->col << " " << currElement->value << std::endl;
+		if (currElement->value != 0) {
+			os << currElement->row << " " << currElement->col << " " << currElement->value << std::endl;
+		}
 		currElement = currElement->next;
 	}
 	os << "0 0 0" << std::endl;
