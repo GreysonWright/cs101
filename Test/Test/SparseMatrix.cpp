@@ -35,7 +35,7 @@ Element *add(int row, int col, double value, Element *list) {
 			return newElement;
 		}
 		
-		while (currElement && row >= currElement->row) {
+		while (currElement && (row > currElement->row || (row == currElement->row && col > currElement->col))) {
 			prev = currElement;
 			currElement = currElement->next;
 		}
@@ -61,7 +61,7 @@ SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
 	
-	while(rightElement && leftElement) {
+	while(leftElement && rightElement) {
 		if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
 			resultMatrix.elements = add(rightElement->row, rightElement->col, leftElement->value + rightElement->value, resultMatrix.elements);
 		} else if (rightElement->col < leftElement->col) {
@@ -148,10 +148,10 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	}
 	
 	for (int i = 0; i < products.size(); ++i) {
-		for (int p = 0; p < products.size(); ++p) {
+		for (int p = i+1; p < products.size(); ++p) {
 			if (products[p].row == products[i].row && products[p].col == products[i].col) {
 				products[i].value += products[p].value;
-//				products.erase(products.begin() + p);
+				products.erase(products.begin() + p);
 			}
 		}
 	}
