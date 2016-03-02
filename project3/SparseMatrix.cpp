@@ -1,181 +1,163 @@
 //
 //  SparseMatrix.cpp
-//  
+//
 //
 //  Created by Greyson Wright on 2/27/16.
 //
 //
 
 #include "SparseMatrix.h"
+//Element Functions
+Element::Element() {
+	this->row = 0;
+	this->col = 0;
+	this->value = 0;
+	this->next = NULL;
+}
 
-//SparseMatrix Publix Methods
+Element::Element(int row, int col, double value, Element *next, Element *prev) {
+	this->row = row;
+	this->col = col;
+	this->value = value;
+	this->next = next;
+	this->prev = prev;
+}
+
+// Private Functions
+Element *add(int row, int col, double value, Element *list) {
+	Element *prev = list;
+	Element *currElement = prev;
+	Element *newElement = new Element(row, col, value, NULL, NULL);
+	bool isHead = true;
+	
+	if (list) {
+		if (row < list->row) {
+			newElement->next = list;
+			return newElement;
+		}
+		
+		while (currElement && (row > currElement->row || (row == currElement->row && col > currElement->col))) {
+			isHead = false;
+			prev = currElement;
+			currElement = currElement->next;
+		}
+		if (isHead) {
+			newElement->next = currElement;
+			return newElement;
+		}
+		
+		newElement->next = currElement;
+		prev->next = newElement;
+		newElement->prev = prev;
+		
+		return list;
+	}
+	
+	return newElement;
+}
+
+Element *add(Element *element, Element *list) {
+	Element *newElement = add(element->row, element->col, element->value, list);
+	
+	return newElement;
+}
+
+// SparseMatrix Public Methods
 SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 	SparseMatrix resultMatrix;
-	resultMatrix.elements = new Element();
-
-	Element *resultElement = resultMatrix.elements;
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
-
-	while(rightElement && leftElement) {
-		if (rightElement->next && leftElement->next) {
-			if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
-				resultElement->row = rightElement->row;
-				resultElement->col = rightElement->col;
-				resultElement->value = leftElement->value + rightElement->value;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-			} else if (rightElement->value > leftElement->value) {
-				resultElement->row = rightElement->row;
-				resultElement->col = rightElement->col;
-				resultElement->value = rightElement->value;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-
-				resultElement->row = leftElement->row;
-				resultElement->col = leftElement->col;
-				resultElement->value = leftElement->value;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-			} else {
-				resultElement->row = leftElement->row;
-				resultElement->col = leftElement->col;
-				resultElement->value = leftElement->value;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-
-				resultElement->row = rightElement->row;
-				resultElement->col = rightElement->col;
-				resultElement->value = rightElement->value;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-			}
+	
+	while(leftElement && rightElement) {
+		if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
+			resultMatrix.elements = add(rightElement->row, rightElement->col, leftElement->value + rightElement->value, resultMatrix.elements);
+		} else {
+			resultMatrix.elements = add(leftElement, resultMatrix.elements);
+			resultMatrix.elements = add(rightElement, resultMatrix.elements);
 		}
-		rightElement = rightElement->next;
-		leftElement = leftElement->next;
+		
+		if (rightElement) {
+			rightElement = rightElement->next;
+		}
+		if (leftElement) {
+			leftElement = leftElement->next;
+		}
 	}
-	resultElement = resultElement->prev;
-	delete resultElement->next;
-	resultElement->next = NULL; 
-
+	
 	return resultMatrix;
 }
 
 SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
-	resultMatrix.elements = new Element();
-
-	Element *resultElement = resultMatrix.elements;
 	Element *rightElement = right.elements;
 	Element *leftElement = left.elements;
 	double difference = 0.0;
-
+	
 	while(rightElement && leftElement) {
 		difference = leftElement->value - rightElement->value;
-		if (rightElement->next && leftElement->next) {
-			if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
-				if (difference != 0) {
-					resultElement->row = rightElement->row;
-					resultElement->col = rightElement->col;
-					resultElement->value = difference;
-					resultElement->next = new Element();
-					resultElement->next->prev = resultElement;
-					resultElement = resultElement->next;
-				}
-			} else if (rightElement->value > leftElement->value) {
-				resultElement->row = rightElement->row;
-				resultElement->col = rightElement->col;
-				resultElement->value = rightElement->value;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-
-				resultElement->row = leftElement->row;
-				resultElement->col = leftElement->col;
-				resultElement->value = leftElement->value * -1;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-			} else {
-				resultElement->row = leftElement->row;
-				resultElement->col = leftElement->col;
-				resultElement->value = leftElement->value;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-
-				resultElement->row = rightElement->row;
-				resultElement->col = rightElement->col;
-				resultElement->value = rightElement->value * -1;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
+		if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
+			if (difference != 0) {
+				resultMatrix.elements = add(rightElement->row, rightElement->col, difference, resultMatrix.elements);
 			}
+		} else if (rightElement->col > leftElement->col) {
+			resultMatrix.elements = add(leftElement, resultMatrix.elements);
+			rightElement->value *= -1;
+			resultMatrix.elements = add(rightElement, resultMatrix.elements);
+		} else {
+			leftElement->value *= -1;
+			resultMatrix.elements = add(leftElement, resultMatrix.elements);
+			resultMatrix.elements = add(rightElement, resultMatrix.elements);
 		}
-		rightElement = rightElement->next;
-		leftElement = leftElement->next;
-	} 
-
-	resultElement->row = 0;
-	resultElement->col = 0;
-	resultElement->value = 0;
-	resultElement->next = NULL;
-
+		
+		if (rightElement) {
+			rightElement = rightElement->next;
+		}
+		if (leftElement) {
+			leftElement = leftElement->next;
+		}
+	}
+	
 	return resultMatrix;
 }
 
 SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
-	resultMatrix.elements = new Element();
-
-	Element *resultElement = resultMatrix.elements;
-	Element *rightElement = right.elements;
 	Element *leftElement = left.elements;
-	double dotProduct = 0.0;
-	int col = 0;
-	// Element *currRightElement = rightElement;
-	Element *currLeftElement = leftElement;
-
-	while(leftElement) {
-		if (leftElement->next) {
-			while(rightElement) {
-				if (rightElement->next) {
-					if (leftElement->col == rightElement->row) {
-						dotProduct += leftElement->value * rightElement->value;
-						col = rightElement->col;
-					}
+	Element *rightElement = right.elements;
+	std::vector<Element> products;
+	double product = 0.0;
+	
+	while (leftElement) {
+		while (rightElement) {
+			if (leftElement->col == rightElement->row) {
+				product = leftElement->value * rightElement->value;
+				if (product != 0) {
+					Element newElement = Element(leftElement->row, rightElement->col, product, NULL, NULL);
+					products.push_back(newElement);
+					product = 0.0;
 				}
-				rightElement = rightElement->next;
-				currLeftElement = left.elements;
 			}
+			
+			rightElement = rightElement->next;
 		}
-
-		if (leftElement && dotProduct != 0) {
-			if (leftElement->row != 0 && leftElement->col != 0) {
-				resultElement->row = leftElement->col;
-				resultElement->col = col;
-				resultElement->value = dotProduct;
-				resultElement->next = new Element();
-				resultElement->next->prev = resultElement;
-				resultElement = resultElement->next;
-				dotProduct = 0.0;
-			}
-		}
-
-		leftElement = leftElement->next;
 		rightElement = right.elements;
+		leftElement = leftElement->next;
+		
 	}
-
-	resultElement->row = 0;
-	resultElement->col = 0;
-	resultElement->value = 0;
-	resultElement->next = NULL;
-
+	
+	for (int i = 0; i < products.size(); ++i) {
+		for (int p = i+1; p < products.size(); ++p) {
+			if (products[p].row == products[i].row && products[p].col == products[i].col) {
+				products[i].value += products[p].value;
+				products.erase(products.begin() + p);
+			}
+		}
+	}
+	
+	for (Element element : products) {
+		resultMatrix.elements = add(element.row, element.col, element.value, resultMatrix.elements);
+	}
+	
 	return resultMatrix;
 }
 
@@ -186,62 +168,29 @@ SparseMatrix::SparseMatrix() {
 //fstream operators
 std::ostream &operator<<(std::ostream &os, SparseMatrix &matrix) {
 	Element *currElement = matrix.elements;
-
+	
 	while(currElement) {
-		os << currElement->row << " ";
-		os << currElement->col << " ";
-		os << currElement->value;
-		os << std::endl;		
+		os << currElement->row << " " << currElement->col << " " << currElement->value << std::endl;
 		currElement = currElement->next;
 	}
-
+	os << "0 0 0" << std::endl;
+	
 	return os;
 }
 
 std::istream &operator>>(std::istream &is, SparseMatrix &matrix) {
-	// Element *currElement = new Element();
-	// matrix.elements = currElement;
-
-	// while(is) {
-	// 	is >> currElement->row;
-	// 	is >> currElement->col;
-	// 	is >> currElement->value;
-	// 	currElement->next = new Element();
-	// 	currElement->next->prev = currElement;
-	// 	currElement = currElement->next;
-	// }
-	// currElement = currElement->prev;
-	// delete currElement->next;
-	// currElement->next = NULL;
-	// return is;
-
-	Element *newElement = new Element();
-	// Element *matrixElement = matrix.elements;
-	Element *currElement = matrix.elements;
-
-	while(is) {
-		is >> newElement->row;
-		is >> newElement->col;
-		is >> newElement->value;
-
-		while(currElement) {
-			if (matrix.elements == NULL) {
-				matrix.elements = newElement;
-				newElement->next = new Element();
-				newElement->next->prev = newElement;
-			}
-
-			if (currElement->next && newElement->row < currElement->row) {
-				newElement->next = currElement->next;
-				newElement->prev = currElement;
-			}
-
-			newElement = newElement->next;	
+	int row = 0;
+	int col = 0;
+	double value = 0.0;
+	
+	while (is) {
+		is >> row;
+		is >> col;
+		is >> value;
+		if (value != 0 || row + col != 0) {
+			matrix.elements = add(row, col, value, matrix.elements);
 		}
 	}
-	newElement = newElement->prev;
-	delete newElement->next;
-	newElement->next = NULL;
-
+	
 	return is;
 }

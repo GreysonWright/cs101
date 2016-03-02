@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #endif
 
@@ -22,6 +23,9 @@ public:
 	Element *prev;
 	Element *next;
 
+	Element();
+	Element(int row, int col, double value, Element *next, Element *prev);
+	
 };
 
 class SparseMatrix {

@@ -28,6 +28,7 @@ Element *add(int row, int col, double value, Element *list) {
 	Element *prev = list;
 	Element *currElement = prev;
 	Element *newElement = new Element(row, col, value, NULL, NULL);
+	bool isHead = true;
 	
 	if (list) {
 		if (row < list->row) {
@@ -36,9 +37,15 @@ Element *add(int row, int col, double value, Element *list) {
 		}
 		
 		while (currElement && (row > currElement->row || (row == currElement->row && col > currElement->col))) {
+			isHead = false;
 			prev = currElement;
 			currElement = currElement->next;
 		}
+		if (isHead) {
+			newElement->next = currElement;
+			return newElement;
+		}
+		
 		newElement->next = currElement;
 		prev->next = newElement;
 		newElement->prev = prev;
@@ -64,9 +71,6 @@ SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 	while(leftElement && rightElement) {
 		if (rightElement->row == leftElement->row && rightElement->col == leftElement-> col) {
 			resultMatrix.elements = add(rightElement->row, rightElement->col, leftElement->value + rightElement->value, resultMatrix.elements);
-		} else if (rightElement->col < leftElement->col) {
-			resultMatrix.elements = add(rightElement, resultMatrix.elements);
-			resultMatrix.elements = add(leftElement, resultMatrix.elements);
 		} else {
 			resultMatrix.elements = add(leftElement, resultMatrix.elements);
 			resultMatrix.elements = add(rightElement, resultMatrix.elements);
@@ -100,7 +104,6 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 			rightElement->value *= -1;
 			resultMatrix.elements = add(rightElement, resultMatrix.elements);
 		} else {
-			
 			leftElement->value *= -1;
 			resultMatrix.elements = add(leftElement, resultMatrix.elements);
 			resultMatrix.elements = add(rightElement, resultMatrix.elements);
@@ -116,11 +119,6 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 	
 	return resultMatrix;
 }
-
-struct Key {
-	int col;
-	int row;
-};
 
 SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
