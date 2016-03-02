@@ -63,13 +63,29 @@ Element *add(Element *element, Element *list) {
 	return newElement;
 }
 
+Element *sum(Element *list) {
+	Element *element = list;
+	Element *head = element;
+	
+	while (element) {
+		if (element->next && element->next->row == element->row && element->next->col == element->col) {
+			element->value += element->next->value;
+			if (element->next->next) {
+				element->next->next->prev = element;
+			}
+			element->next = element->next->next;
+		}
+		element = element->next;
+	}
+	
+	return head;
+}
+
 // SparseMatrix Public Methods
 SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 	SparseMatrix resultMatrix;
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
-	Element *element;
-	Element *head;
 	
 	while(true) {
 		if (!rightElement && !leftElement) {
@@ -85,21 +101,7 @@ SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 			leftElement = leftElement->next;
 		}
 	}
-	
-	element = resultMatrix.elements;
-	head = element;
-	
-	while (element) {
-		if (element->next && element->next->row == element->row && element->next->col == element->col) {
-			element->value += element->next->value;
-			if (element->next->next) {
-				element->next->next->prev = element;
-			}
-			element->next = element->next->next;
-		}
-		element = element->next;
-	}
-	resultMatrix.elements = head;
+	resultMatrix.elements = sum(resultMatrix.elements);
 	
 	return resultMatrix;
 }
@@ -108,8 +110,6 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
-	Element *element;
-	Element *head;
 	
 	while(true) {
 		if (!rightElement && !leftElement) {
@@ -126,21 +126,7 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 			leftElement = leftElement->next;
 		}
 	}
-	
-	element = resultMatrix.elements;
-	head = element;
-	
-	while (element) {
-		if (element->next && element->next->row == element->row && element->next->col == element->col) {
-			element->value += element->next->value;
-			if (element->next->next) {
-				element->next->next->prev = element;
-			}
-			element->next = element->next->next;
-		}
-		element = element->next;
-	}
-	resultMatrix.elements = head;
+	resultMatrix.elements = sum(resultMatrix.elements);
 	
 	return resultMatrix;
 }
@@ -149,7 +135,6 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
 	Element *leftElement = left.elements;
 	Element *rightElement = right.elements;
-	std::vector<Element> products;
 	double product = 0.0;
 	
 	while (leftElement) {
@@ -157,8 +142,7 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 			if (leftElement->col == rightElement->row) {
 				product = leftElement->value * rightElement->value;
 				if (product != 0) {
-					Element newElement = Element(leftElement->row, rightElement->col, product, NULL, NULL);
-					products.push_back(newElement);
+					resultMatrix.elements = add(leftElement->row, rightElement->col, product, resultMatrix.elements);
 					product = 0.0;
 				}
 			}
@@ -169,19 +153,7 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 		leftElement = leftElement->next;
 		
 	}
-	
-	for (int i = 0; i < products.size(); ++i) {
-		for (int p = i+1; p < products.size(); ++p) {
-			if (products[p].row == products[i].row && products[p].col == products[i].col) {
-				products[i].value += products[p].value;
-				products.erase(products.begin() + p);
-			}
-		}
-	}
-	
-	for (Element element : products) {
-		resultMatrix.elements = add(element.row, element.col, element.value, resultMatrix.elements);
-	}
+	resultMatrix.elements = sum(resultMatrix.elements);
 	
 	return resultMatrix;
 }
