@@ -49,6 +49,27 @@ int main(int argc, char **argv) {
 	}
 
 	std::cout << "Found " << count <<" errors." << std::endl;
-	return 0;
 
+	if (count == 0) {
+		std::cout << "Reverse Checking..." << std::endl;
+
+		for (int p = 0; p < file0.size(); ++p) {
+			for (int i = 0; i < file0[p].size(); ++i) {
+				if (file0[p][i] != file1[p][i]) {
+					lineErr = true;
+					break;
+				}
+			}
+			if (lineErr) {
+				++count;
+				std::cout << "-------" << std::endl << "Line " << p << std::endl << std::endl;
+				std::cout << "<" << file0[p] << ">" << " != " << "<" << file1[p] << ">" << std::endl << std::endl;
+				lineErr = false;
+			}
+		}
+	}
+
+	std::cout << "Found " << count <<" errors." << std::endl;
+
+	return 0;
 }

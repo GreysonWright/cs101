@@ -38,5 +38,8 @@ public:
 	friend std::istream &operator>>(std::istream &is, SparseMatrix &matrix);
 
 	SparseMatrix();
+	void addElement(int row, int col, double value);
+	void addElement(Element *element);
+	void sumElements();
 };
 

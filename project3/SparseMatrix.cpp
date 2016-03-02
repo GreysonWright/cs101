@@ -7,7 +7,7 @@
 //
 
 #include "SparseMatrix.h"
-//Element Functions
+//Element Methods
 Element::Element() {
 	this->row = 0;
 	this->col = 0;
@@ -23,53 +23,11 @@ Element::Element(int row, int col, double value, Element *next, Element *prev) {
 	this->prev = prev;
 }
 
-// Private Functions
-Element *add(int row, int col, double value, Element *list) {
-	Element *prev = list;
-	Element *currElement = prev;
-	Element *newElement = new Element(row, col, value, NULL, NULL);
-	bool isHead = true;
-	
-	if (list) {
-		if (row < list->row) {
-			newElement->next = list;
-			return newElement;
-		}
-		
-		while (currElement && (row > currElement->row || (row == currElement->row && col > currElement->col))) {
-			isHead = false;
-			prev = currElement;
-			currElement = currElement->next;
-		}
-		if (isHead) {
-			newElement->next = currElement;
-			currElement->prev = newElement;
-			return newElement;
-		}
-		
-		newElement->next = currElement;
-		prev->next = newElement;
-		newElement->prev = prev;
-		
-		return list;
-	}
-	
-	return newElement;
-}
-
-Element *add(Element *element, Element *list) {
-	Element *newElement = add(element->row, element->col, element->value, list);
-	
-	return newElement;
-}
-
 // SparseMatrix Public Methods
 SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 	SparseMatrix resultMatrix;
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
-	Element *element;
-	Element *head;
 	
 	while(true) {
 		if (!rightElement && !leftElement) {
@@ -77,29 +35,15 @@ SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right){
 		}
 		
 		if (rightElement) {
-			resultMatrix.elements = add(rightElement, resultMatrix.elements);
+			resultMatrix.addElement(rightElement);
 			rightElement = rightElement->next;
 		}
 		if (leftElement) {
-			resultMatrix.elements = add(leftElement, resultMatrix.elements);
+			resultMatrix.addElement(leftElement);
 			leftElement = leftElement->next;
 		}
 	}
-	
-	element = resultMatrix.elements;
-	head = element;
-	
-	while (element) {
-		if (element->next && element->next->row == element->row && element->next->col == element->col) {
-			element->value += element->next->value;
-			if (element->next->next) {
-				element->next->next->prev = element;
-			}
-			element->next = element->next->next;
-		}
-		element = element->next;
-	}
-	resultMatrix.elements = head;
+	resultMatrix.sumElements();
 	
 	return resultMatrix;
 }
@@ -108,8 +52,6 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
 	Element *rightElement = left.elements;
 	Element *leftElement = right.elements;
-	Element *element;
-	Element *head;
 	
 	while(true) {
 		if (!rightElement && !leftElement) {
@@ -117,30 +59,16 @@ SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right) {
 		}
 		
 		if (rightElement) {
-			resultMatrix.elements = add(rightElement, resultMatrix.elements);
+			resultMatrix.addElement(rightElement);
 			rightElement = rightElement->next;
 		}
 		if (leftElement) {
 			leftElement->value *= -1;
-			resultMatrix.elements = add(leftElement, resultMatrix.elements);
+			resultMatrix.addElement(leftElement);
 			leftElement = leftElement->next;
 		}
 	}
-	
-	element = resultMatrix.elements;
-	head = element;
-	
-	while (element) {
-		if (element->next && element->next->row == element->row && element->next->col == element->col) {
-			element->value += element->next->value;
-			if (element->next->next) {
-				element->next->next->prev = element;
-			}
-			element->next = element->next->next;
-		}
-		element = element->next;
-	}
-	resultMatrix.elements = head;
+	resultMatrix.sumElements();
 	
 	return resultMatrix;
 }
@@ -149,7 +77,6 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 	SparseMatrix resultMatrix;
 	Element *leftElement = left.elements;
 	Element *rightElement = right.elements;
-	std::vector<Element> products;
 	double product = 0.0;
 	
 	while (leftElement) {
@@ -157,8 +84,7 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 			if (leftElement->col == rightElement->row) {
 				product = leftElement->value * rightElement->value;
 				if (product != 0) {
-					Element newElement = Element(leftElement->row, rightElement->col, product, NULL, NULL);
-					products.push_back(newElement);
+					resultMatrix.addElement(leftElement->row, rightElement->col, product);
 					product = 0.0;
 				}
 			}
@@ -169,25 +95,71 @@ SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right) {
 		leftElement = leftElement->next;
 		
 	}
-	
-	for (int i = 0; i < products.size(); ++i) {
-		for (int p = i+1; p < products.size(); ++p) {
-			if (products[p].row == products[i].row && products[p].col == products[i].col) {
-				products[i].value += products[p].value;
-				products.erase(products.begin() + p);
-			}
-		}
-	}
-	
-	for (Element element : products) {
-		resultMatrix.elements = add(element.row, element.col, element.value, resultMatrix.elements);
-	}
+	resultMatrix.sumElements();
 	
 	return resultMatrix;
 }
 
 SparseMatrix::SparseMatrix() {
 	elements = NULL;
+}
+
+void SparseMatrix::addElement(int row, int col, double value) {
+	Element *list = this->elements;
+	Element *prev = list;
+	Element *currElement = prev;
+	Element *newElement = new Element(row, col, value, NULL, NULL);
+	bool isHead = true;
+	
+	if (list) {
+		if (row < list->row) {
+			newElement->next = list;
+			this->elements = newElement;
+			return;
+		}
+		
+		while (currElement && (row > currElement->row || (row == currElement->row && col > currElement->col))) {
+			isHead = false;
+			prev = currElement;
+			currElement = currElement->next;
+		}
+		if (isHead) {
+			newElement->next = currElement;
+			currElement->prev = newElement;
+			this->elements = newElement;
+			return;
+		}
+		
+		newElement->next = currElement;
+		prev->next = newElement;
+		newElement->prev = prev;
+		this->elements = list;
+		return;
+	}
+	this->elements = newElement;
+}
+
+void SparseMatrix::addElement(Element *element) {
+	this->addElement(element->row, element->col, element->value);
+}
+
+void SparseMatrix::sumElements() {
+	Element *list = this->elements;
+	Element *element = list;
+	Element *head = element;
+	
+	while (element) {
+		if (element->next && element->next->row == element->row && element->next->col == element->col) {
+			element->value += element->next->value;
+			if (element->next->next) {
+				element->next->next->prev = element;
+			}
+			element->next = element->next->next;
+		}
+		element = element->next;
+	}
+	
+	this->elements = head;
 }
 
 //fstream operators
@@ -215,7 +187,7 @@ std::istream &operator>>(std::istream &is, SparseMatrix &matrix) {
 		is >> col;
 		is >> value;
 		if (value != 0 || row + col != 0) {
-			matrix.elements = add(row, col, value, matrix.elements);
+			matrix.addElement(row, col, value);
 		}
 	}
 	

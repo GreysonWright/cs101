@@ -11,7 +11,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <vector>
 
 #endif
 
@@ -35,9 +34,12 @@ public:
 	friend SparseMatrix operator+(const SparseMatrix &left, const SparseMatrix &right);
 	friend SparseMatrix operator-(const SparseMatrix &left, const SparseMatrix &right);
 	friend SparseMatrix operator*(const SparseMatrix &left, const SparseMatrix &right);
+	friend std::ostream &operator<<(std::ostream &os, SparseMatrix &matrix);
+	friend std::istream &operator>>(std::istream &is, SparseMatrix &matrix);
 
 	SparseMatrix();
+	void addElement(int row, int col, double value);
+	void addElement(Element *element);
+	void sumElements();
 };
 
-std::ostream &operator<<(std::ostream &os, SparseMatrix &matrix);
-std::istream &operator>>(std::istream &is, SparseMatrix &matrix);
