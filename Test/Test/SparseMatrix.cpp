@@ -7,63 +7,6 @@
 //
 
 #include "SparseMatrix.h"
-// Private Functions
-//Element *add(int row, int col, double value, Element *list) {
-//	Element *prev = list;
-//	Element *currElement = prev;
-//	Element *newElement = new Element(row, col, value, NULL, NULL);
-//	bool isHead = true;
-//	
-//	if (list) {
-//		if (row < list->row) {
-//			newElement->next = list;
-//			return newElement;
-//		}
-//		
-//		while (currElement && (row > currElement->row || (row == currElement->row && col > currElement->col))) {
-//			isHead = false;
-//			prev = currElement;
-//			currElement = currElement->next;
-//		}
-//		if (isHead) {
-//			newElement->next = currElement;
-//			currElement->prev = newElement;
-//			return newElement;
-//		}
-//		
-//		newElement->next = currElement;
-//		prev->next = newElement;
-//		newElement->prev = prev;
-//		
-//		return list;
-//	}
-//	
-//	return newElement;
-//}
-//
-//Element *add(Element *element, Element *list) {
-//	Element *newElement = add(element->row, element->col, element->value, list);
-//	
-//	return newElement;
-//}
-//
-//Element *sum(Element *list) {
-//	Element *element = list;
-//	Element *head = element;
-//	
-//	while (element) {
-//		if (element->next && element->next->row == element->row && element->next->col == element->col) {
-//			element->value += element->next->value;
-//			if (element->next->next) {
-//				element->next->next->prev = element;
-//			}
-//			element->next = element->next->next;
-//		}
-//		element = element->next;
-//	}
-//	
-//	return head;
-//}
 
 //Element Methods
 Element::Element() {
