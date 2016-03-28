@@ -80,6 +80,7 @@ void HashMap::insert(int value, std::string key) {
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
 		hashVal = (hashVal + (unsigned long)pow(count, option)) % size;
 		collisions = collide;
+		std::cout << key << std::endl;
 	}
 
 	values[hashVal].add(value, key);
@@ -129,6 +130,11 @@ HashMap getFileContents(std::string fileName, int size, int option, int &wordCou
 				c = tolower(c);
 				word += c;
 			}
+		}
+		if (word != "") {
+			contents.insert(lineCount, word);
+			word = "";
+			++wordCount;
 		}
 		++lineCount;
 	}
