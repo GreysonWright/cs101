@@ -16,10 +16,10 @@
 class Hashable {
 public:
 	std::string key;
-	int value;
+	std::vector<int> values;
 	bool isEmpty;
 	Hashable();
-	Hashable(int value, std::string key);
+	void add(int value, std::string key);
 };
 
 class HashMap {
@@ -35,17 +35,16 @@ public:
 	HashMap(int size, int option);
 	void removeKey(std::string key);
 	void insert(int value, std::string key);
- 	int valueForKey(std::string key);
+	std::vector<int>  valueForKey(std::string key);
 };
 
 Hashable::Hashable() {
 	key = "";
-	value = 0;
 	isEmpty = true;
 }
 
-Hashable::Hashable(int value, std::string key) {
-	this->value = value;
+void Hashable::add(int value, std::string key) {
+	this->values.push_back(value);
 	this->key = key;
 	isEmpty = false;
 }
@@ -74,8 +73,7 @@ unsigned long HashMap::hash(char *str) {
 }
 
 void HashMap::insert(int value, std::string key) {
-	Hashable hashable(value, key);
- 	char *cKey = (char *)key.c_str();
+	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
 
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
@@ -83,11 +81,11 @@ void HashMap::insert(int value, std::string key) {
 		++collisions;
 	}
 
-	values[hashVal] = hashable;
+	values[hashVal].add(value, key);
 	++count;
 }
 
-int HashMap::valueForKey(std::string key) {
+std::vector<int>  HashMap::valueForKey(std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
 
@@ -95,7 +93,7 @@ int HashMap::valueForKey(std::string key) {
 		hashVal = (long)pow((hashVal + 1), option) % size;
 	}
 
-	return values[hashVal].value;
+	return values[hashVal].values;
 }
 
 std::vector<std::string> getFileContents(std::string fileName) {
@@ -113,14 +111,14 @@ std::vector<std::string> getFileContents(std::string fileName) {
 
 HashMap getFileContents(std::string fileName, int size, int option, int &wordCount) {
 	std::ifstream file(fileName);
- 	HashMap contents(size, option);
+	HashMap contents(size, option);
 	std::string line;
 	std::string word;
 	int lineCount = 1;
 
 	while (getline(file, line)) {
 		for (char c : line) {
-			if (!isalpha(c) || file.eof()) {
+			if (!isalpha(c)) {
 				if (word.length() > 0) {
 					contents.insert(lineCount, word);
 					word = "";
@@ -138,17 +136,29 @@ HashMap getFileContents(std::string fileName, int size, int option, int &wordCou
 	return contents;
 }
 
+void printValues(std::vector<int> values) {
+	std::cout << "[";
+	for (int i = 0; i < values.size(); ++i) {
+		std::cout << values[i];
+		if (i != values.size() - 1) {
+			std::cout << ",";
+		}
+	}
+	std::cout << "]" << std::endl;
+}
+
 void printResults(int wordCount, HashMap contents, std::vector<std::string> queryContents) {
 	std::cout << "The number of words found in the file was " << wordCount << std::endl;
 	std::cout << "The number of unique words found in the file was " << contents.count << std::endl;
 	std::cout << "The number of collisions was " << contents.collisions << std::endl;
 	for (std::string word : queryContents) {
-		std::cout << contents.valueForKey(word) << std::endl;
+		std::cout << word;
+		printValues(contents.valueForKey(word));
 	}
 }
 
 int main(int argc, char **argv) {
- 	int option = !strcmp(argv[4], "lp") ? 1 : 2;
+	int option = !strcmp(argv[4], "lp") ? 1 : 2;
 	int wordCount = 0;
 	HashMap inputContents = getFileContents(argv[1], std::stoi(argv[3]), option, wordCount);
 	std::vector<std::string> queryContents = getFileContents(argv[2]);
