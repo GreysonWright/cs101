@@ -35,7 +35,7 @@ public:
 	HashMap(int size, int option);
 	void removeKey(std::string key);
 	void insert(int value, std::string key);
-	std::vector<int>  valueForKey(std::string key);
+	std::vector<int> valueForKey(std::string key);
 };
 
 Hashable::Hashable() {
@@ -75,17 +75,19 @@ unsigned long HashMap::hash(char *str) {
 void HashMap::insert(int value, std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
+	int collide = collisions + 1;
 
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
 		hashVal = (long)pow((hashVal + 1), option) % size;
-		++collisions;
+		std::cout << hashVal << std::endl;
+		collisions = collide;
 	}
 
 	values[hashVal].add(value, key);
 	++count;
 }
 
-std::vector<int>  HashMap::valueForKey(std::string key) {
+std::vector<int> HashMap::valueForKey(std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
 
