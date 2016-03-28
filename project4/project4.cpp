@@ -78,8 +78,7 @@ void HashMap::insert(int value, std::string key) {
 	int collide = collisions + 1;
 
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
-		hashVal = (long)pow((hashVal + 1), option) % size;
-		std::cout << hashVal << std::endl;
+		hashVal = (hashVal + (unsigned long)pow(count, option)) % size;
 		collisions = collide;
 	}
 
@@ -92,7 +91,7 @@ std::vector<int> HashMap::valueForKey(std::string key) {
 	unsigned long hashVal = hash(cKey) % size;
 
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
-		hashVal = (long)pow((hashVal + 1), option) % size;
+		hashVal = (hashVal + (unsigned long)pow(count, option)) % size;
 	}
 
 	return values[hashVal].values;
