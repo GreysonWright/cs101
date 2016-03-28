@@ -141,7 +141,7 @@ HashMap getFileContents(std::string fileName, int size, int option, int &wordCou
 void printResults(int wordCount, HashMap contents, std::vector<std::string> queryContents) {
 	std::cout << "The number of words found in the file was " << wordCount << std::endl;
 	std::cout << "The number of unique words found in the file was " << contents.count << std::endl;
-std::cout << "The number of collisions was " << contents.collisions << std::endl;
+	std::cout << "The number of collisions was " << contents.collisions << std::endl;
 	for (std::string word : queryContents) {
 		std::cout << contents.valueForKey(word) << std::endl;
 	}
