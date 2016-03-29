@@ -78,10 +78,14 @@ void HashMap::insert(int value, std::string key) {
 	unsigned long hashVal = hash(cKey) % size;
 	int i = 1;
 
+	if (values[hashVal].key == key) {
+		std::cout << "test -- " << key << std::endl;
+	}
+
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
 		hashVal = (hashVal + (unsigned long)pow(i, option)) % size;
 		++i;
-		collisions++;
+		++collisions;
 	}
 
 	if (values[hashVal].isEmpty) {
@@ -109,6 +113,7 @@ std::vector<std::string> getFileContents(std::string fileName) {
 	std::string line;
 
 	while (getline(file, line)) {
+		std::transform(line.begin(), line.end(), line.begin(), ::tolower);
 		contents.push_back(line);
 	}
 
