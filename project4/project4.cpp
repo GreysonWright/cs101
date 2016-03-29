@@ -59,11 +59,11 @@ HashMap::HashMap(int size, int option) {
 
 unsigned long HashMap::hash(char *str) {
 	unsigned long hash = 5381;
-	char *string = (char *)malloc(sizeof(str));
+	char *stricd ng = (char *)malloc(sizeof(str));
 	int c;
 
 	strcpy(string, str);
-	while ((c = (*string)++)) {
+	while ((c = *string++)) {
 		hash = ((hash << 5) + hash) + c;
 	}
 
@@ -75,13 +75,12 @@ unsigned long HashMap::hash(char *str) {
 void HashMap::insert(int value, std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
-	int collide = collisions + 1;
 	int i = 1;
 
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
 		hashVal = (hashVal + (unsigned long)pow(i, option)) % size;
 		++i;
-		collisions = collide;
+		collisions++;
 	}
 
 	values[hashVal].add(value, key);
