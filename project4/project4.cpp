@@ -12,6 +12,7 @@
 #include <vector>
 #include <cmath>
 #include <cctype>
+#include <cstring>
 
 class Hashable {
 public:
@@ -149,7 +150,7 @@ HashMap getFileContents(std::string fileName, int size, int option, int &wordCou
 
 void printValues(std::vector<int> values) {
 	std::cout << "[";
-	for (int i = 0; i < values.size(); ++i) {
+	for (unsigned int i = 0; i < values.size(); ++i) {
 		std::cout << values[i];
 		if (i != values.size() - 1) {
 			std::cout << ",";
