@@ -81,7 +81,6 @@ void HashMap::insert(int value, std::string key) {
 		hashVal = (hashVal + (unsigned long)pow(i, option)) % size;
 		++i;
 		collisions++;
-
 	}
 
 	if (values[hashVal].isEmpty) {
