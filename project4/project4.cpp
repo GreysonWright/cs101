@@ -76,11 +76,12 @@ void HashMap::insert(int value, std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
 	int collide = collisions + 1;
+	int i = 1;
 
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
-		hashVal = (hashVal + (unsigned long)pow(count, option)) % size;
+		hashVal = (hashVal + (unsigned long)pow(i, option)) % size;
+		++i;
 		collisions = collide;
-		std::cout << key << std::endl;
 	}
 
 	values[hashVal].add(value, key);
@@ -90,9 +91,11 @@ void HashMap::insert(int value, std::string key) {
 std::vector<int> HashMap::valueForKey(std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
+	int i = 1;
 
 	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
-		hashVal = (hashVal + (unsigned long)pow(count, option)) % size;
+		hashVal = (hashVal + (unsigned long)pow(i, option)) % size;
+		++i;
 	}
 
 	return values[hashVal].values;
