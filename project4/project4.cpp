@@ -10,6 +10,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <cmath>
 #include <cctype>
 #include <cstring>
@@ -76,35 +77,33 @@ unsigned long HashMap::hash(char *str) {
 void HashMap::insert(int value, std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
-	int i = 1;
+	unsigned long i = hashVal;
+	int increment = 1;
 
-	if (values[hashVal].key == key) {
-		std::cout << "test -- " << key << std::endl;
-	}
-
-	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
-		hashVal = (hashVal + (unsigned long)pow(i, option)) % size;
-		++i;
+	while (values[i].key != key && !values[i].isEmpty) {
+		i = (hashVal + (unsigned long)pow(increment, option)) % size;
+		++increment;
 		++collisions;
 	}
 
-	if (values[hashVal].isEmpty) {
+	if (values[i].isEmpty) {
 		++count;
 	}
-	values[hashVal].add(value, key);
+	values[i].add(value, key);
 }
 
 std::vector<int> HashMap::valueForKey(std::string key) {
 	char *cKey = (char *)key.c_str();
 	unsigned long hashVal = hash(cKey) % size;
-	int i = 1;
+	unsigned long i = hashVal;
+	int increment = 1;
 
-	while (values[hashVal].key != key && !values[hashVal].isEmpty) {
-		hashVal = (hashVal + (unsigned long)pow(i, option)) % size;
-		++i;
+	while (values[i].key != key && !values[i].isEmpty) {
+		i = (hashVal + (unsigned long)pow(increment, option)) % size;
+		++increment;
 	}
 
-	return values[hashVal].values;
+	return values[i].values;
 }
 
 std::vector<std::string> getFileContents(std::string fileName) {
