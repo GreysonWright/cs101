@@ -10,8 +10,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <cmath>
 #include <cctype>
 #include <cstring>
 
@@ -40,6 +38,15 @@ public:
 	std::vector<int> valueForKey(std::string key);
 };
 
+unsigned long pow(unsigned long coeff, unsigned long exp) {
+	unsigned long result = coeff;
+
+	for (unsigned int i = 1; i < exp; ++i) {
+		result *= coeff;
+	}
+	return result;
+}
+
 Hashable::Hashable() {
 	key = "";
 	isEmpty = true;
@@ -61,16 +68,12 @@ HashMap::HashMap(int size, int option) {
 
 unsigned long HashMap::hash(char *str) {
 	unsigned long hash = 5381;
-	char *string = (char *)malloc(sizeof(str));
 	int c;
 
-	strcpy(string, str);
-	while ((c = *string++)) {
+	while ((c = *str++)) {
 		hash = ((hash << 5) + hash) + c;
 	}
 
-	string = 0;
-	free(string);
 	return hash;
 }
 
@@ -81,7 +84,7 @@ void HashMap::insert(int value, std::string key) {
 	int increment = 1;
 
 	while (values[i].key != key && !values[i].isEmpty) {
-		i = (hashVal + (unsigned long)pow(increment, option)) % size;
+		i = (hashVal + pow(increment, option)) % size;
 		++increment;
 		++collisions;
 	}
@@ -99,7 +102,7 @@ std::vector<int> HashMap::valueForKey(std::string key) {
 	int increment = 1;
 
 	while (values[i].key != key && !values[i].isEmpty) {
-		i = (hashVal + (unsigned long)pow(increment, option)) % size;
+		i = (hashVal + pow(increment, option)) % size;
 		++increment;
 	}
 
@@ -112,7 +115,9 @@ std::vector<std::string> getFileContents(std::string fileName) {
 	std::string line;
 
 	while (getline(file, line)) {
-		std::transform(line.begin(), line.end(), line.begin(), ::tolower);
+		for (unsigned int i = 0; i < line.length(); ++i) {
+			line[i] = tolower(line[i]);
+		}
 		contents.push_back(line);
 	}
 
@@ -180,6 +185,5 @@ int main(int argc, char **argv) {
 	std::vector<std::string> queryContents = getFileContents(argv[2]);
 
 	printResults(wordCount, inputContents, queryContents);
-
 	return 0;
 }
