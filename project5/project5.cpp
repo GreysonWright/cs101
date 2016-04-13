@@ -33,42 +33,47 @@ std::string getFileContents(std::string fileName) {
 	return line;
 }
 
-int search(std::string arr, int strt, int end, char value) {
-	for (int i = strt; i <= end; i++)
-		if (arr[i] == value)
+int search(std::string str, int head, int tail, char c) {
+	for (int i = head; i <= tail; ++i){
+		if (str[i] == c) {
 			return i;
+		}
+	}
+
 	return -1;
 }
 
-std::string extrackKeys(std::string in, std::string level, int m, int n) {
+std::string extrackKeys(std::string in, std::string level, int levelSize, int inSize) {
 	std::string newLevel = "";
 	int j = 0;
-	for (int i = 0; i < n; i++){
-		if (search(in, 0, m-1, level[i]) != -1) {
+
+	for (int i = 0; i < inSize; ++i) {
+		if (search(in, 0, levelSize - 1, level[i]) != -1) {
 			newLevel += level[i];
-			j++;
-			return newLevel;
+			++j;
 		}
 	}
+
 	return newLevel;
 }
 
-Node* generateTreeInLevel(std::string in, std::string level, int inStrt, int inEnd, int n) {
-	if (inStrt > inEnd) {
+Node* generateTreeInLevel(std::string in, std::string level, int inHead, int inEnd, int inSize) {
+	if (inHead > inEnd) {
 		return NULL;
 	}
 
 	Node *root = new Node(level[0]);
 
-	if (inStrt == inEnd){
+	if (inHead == inEnd) {
 		return root;
 	}
-	int inIndex = search(in, inStrt, inEnd, root->letter);
-	std::string llevel  = extrackKeys(in, level, inIndex, n);
-	std::string rlevel  = extrackKeys(in.substr(inIndex + 1, in.size()), level, n-inIndex-1, n);
 
-	root->left = generateTreeInLevel(in, llevel, inStrt, inIndex-1, n);
-	root->right = generateTreeInLevel(in, rlevel, inIndex+1, inEnd, n);
+	int inIndex = search(in, inHead, inEnd, root->letter);
+	std::string llevel  = extrackKeys(in, level, inIndex, inSize);
+	std::string rlevel  = extrackKeys(in.substr(inIndex + 1, in.size()), level, inSize - inIndex - 1, inSize);
+
+	root->left = generateTreeInLevel(in, llevel, inHead, inIndex - 1, inSize);
+	root->right = generateTreeInLevel(in, rlevel, inIndex+1, inEnd, inSize);
 
 	return root;
 }
@@ -110,8 +115,8 @@ void printLevel(std::ofstream *file, Node* node, int level) {
 	}
 
 	else if (level > 1) {
-		printLevel(file, node->left, level-1);
-		printLevel(file, node->right, level-1);
+		printLevel(file, node->left, level - 1);
+		printLevel(file, node->right, level - 1);
 	}
 }
 
@@ -179,19 +184,18 @@ std::string decipherTree(Node *node, std::string &cipher) {
     Node *currNode = node;
     std::string decipher = "";
     for (unsigned int i = 0; i < cipher.size(); ++i) {
-        if (cipher[i] == 0) {
-            if (currNode->left) {
-                currNode = currNode->left;
-            }
-        } else if (cipher[i] == 1){
-            if (currNode->right) {
-                currNode = currNode->right;
-            }
+        if (cipher[i] == '0' && currNode->left) {
+			currNode = currNode->left;
+        } else if (cipher[i] == '1' && currNode->right){
+			currNode = currNode->right;
         } else {
+			--i;
             decipher += currNode->letter;
             currNode = node;
         }
     }
+	decipher += currNode->letter;
+	currNode = node;
     return decipher;
 }
 
