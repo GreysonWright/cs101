@@ -78,7 +78,7 @@ Node* generateTreeInLevel(std::string in, std::string level, int inHead, int inE
 	return root;
 }
 
-Node *generateTreePrePost(std::string pre, std::string post, int* index, int head, int tail, int size) {
+Node *generateTreePrePost(std::string pre, std::string post, int* index, unsigned int head, unsigned int tail, int size) {
 	if ((*index) >= size || head > tail) {
 		return NULL;
 	}
@@ -152,7 +152,7 @@ void writeTree(std::ofstream *file, Node* node, int &option) {
 			*file << node->letter;
 		}
 	} else {
-		int height = getHeight(node);
+		unsigned int height = getHeight(node);
 		for (unsigned int i = 1; i <= height; ++i){
 			writeLevel(file, node, i);
 		}
