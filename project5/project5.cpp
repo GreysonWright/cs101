@@ -69,43 +69,43 @@ Node* generateTreeInLevel(std::string in, std::string level, int inHead, int inE
 	}
 
 	int inIndex = search(in, inHead, inEnd, root->letter);
-	std::string llevel  = extrackKeys(in, level, inIndex, inSize);
-	std::string rlevel  = extrackKeys(in.substr(inIndex + 1, in.size()), level, inSize - inIndex - 1, inSize);
+	std::string left = extrackKeys(in, level, inIndex, inSize);
+	std::string right = extrackKeys(in.substr(inIndex + 1, in.size()), level, inSize - inIndex - 1, inSize);
 
-	root->left = generateTreeInLevel(in, llevel, inHead, inIndex - 1, inSize);
-	root->right = generateTreeInLevel(in, rlevel, inIndex+1, inEnd, inSize);
+	root->left = generateTreeInLevel(in, left, inHead, inIndex - 1, inSize);
+	root->right = generateTreeInLevel(in, right, inIndex+1, inEnd, inSize);
 
 	return root;
 }
 
-Node *generateTreePrePost(std::string pre, std::string post, int* index, int l, int h, int size) {
-	if ((*index) >= size || l > h) {
+Node *generateTreePrePost(std::string pre, std::string post, int* index, int head, int tail, int size) {
+	if ((*index) >= size || head > tail) {
 		return NULL;
 	}
 
 	Node *root = new Node(pre[*index]);
 	++(*index);
 
-	if (l == h) {
+	if (head == tail) {
 		return root;
 	}
 
 	unsigned int i = 0;
-	for (i = l; i <= h; ++i) {
+	for (i = head; i <= tail; ++i) {
 		if (pre[*index] == post[i]) {
 			break;
 		}
 	}
 
-	if (i <= h) {
-		root->left = generateTreePrePost(pre, post, index, l, i, size);
-		root->right = generateTreePrePost(pre, post, index, i + 1, h, size);
+	if (i <= tail) {
+		root->left = generateTreePrePost(pre, post, index, head, i, size);
+		root->right = generateTreePrePost(pre, post, index, i + 1, tail, size);
 	}
 
 	return root;
 }
 
-void printLevel(std::ofstream *file, Node* node, int level) {
+void writeLevel(std::ofstream *file, Node* node, int level) {
 	if (node == NULL) {
 		return;
 	}
@@ -115,17 +115,19 @@ void printLevel(std::ofstream *file, Node* node, int level) {
 	}
 
 	else if (level > 1) {
-		printLevel(file, node->left, level - 1);
-		printLevel(file, node->right, level - 1);
+		writeLevel(file, node->left, level - 1);
+		writeLevel(file, node->right, level - 1);
 	}
 }
 
-int height(Node *node) {
+int getHeight(Node *node) {
 	if (node == NULL) {
 		return 0;
 	}
-	int left = height(node->left);
-	int right = height(node->right);
+
+	int left = getHeight(node->left);
+	int right = getHeight(node->right);
+
 	if (left > right) {
 		return left + 1;
 	}
@@ -133,12 +135,7 @@ int height(Node *node) {
 }
 
 void writeTree(std::ofstream *file, Node* node, int &option) {
-	if (option == 3) {
-		int h = height(node);
-		for (unsigned int i = 1; i <= h; ++i){
-			printLevel(file, node, i);
-		}
-	} else {
+	if (option != 3) {
 		if (node == NULL) {
 			return;
 		}
@@ -153,6 +150,11 @@ void writeTree(std::ofstream *file, Node* node, int &option) {
 		writeTree(file, node->right, option);
 		if (option == 2) {
 			*file << node->letter;
+		}
+	} else {
+		int height = getHeight(node);
+		for (unsigned int i = 1; i <= height; ++i){
+			writeLevel(file, node, i);
 		}
 	}
 }
@@ -176,33 +178,41 @@ void writeTree(std::string fileName, Node *node) {
 
 	option = getOption(fileName);
 	writeTree(&file, node, option);
-    file << std::endl;
+	file << std::endl;
 	file.close();
 }
 
 std::string decipherTree(Node *node, std::string &cipher) {
-    Node *currNode = node;
-    std::string decipher = "";
-    for (unsigned int i = 0; i < cipher.size(); ++i) {
-        if (cipher[i] == '0' && currNode->left) {
+	Node *currNode = node;
+	std::string decipher = "";
+
+	for (unsigned int i = 0; i < cipher.size(); ++i) {
+		if (cipher[i] == '0' && currNode->left) {
 			currNode = currNode->left;
-        } else if (cipher[i] == '1' && currNode->right){
+		} else if (cipher[i] == '1' && currNode->right){
 			currNode = currNode->right;
-        } else {
+		} else {
 			--i;
-            decipher += currNode->letter;
-            currNode = node;
-        }
-    }
+			decipher += currNode->letter;
+			currNode = node;
+		}
+	}
 	decipher += currNode->letter;
 	currNode = node;
-    return decipher;
+
+	return decipher;
+}
+
+void writeText(std::string fileName, std::string text) {
+	std::ofstream file(fileName);
+	file << text << std::endl;
+	file.close();
 }
 
 int main(int argc, char const **argv) {
 	std::string str1 = getFileContents(argv[1]);
 	std::string str2 = getFileContents(argv[2]);
-    std::string cipher = getFileContents(argv[3]);
+	std::string cipher = getFileContents(argv[3]);
 	std::string arg1 = argv[1];
 	int index = 0;
 	Node *node;
@@ -215,6 +225,9 @@ int main(int argc, char const **argv) {
 
 	writeTree(argv[4], node);
 	writeTree(argv[5], node);
-    std::cout << decipherTree(node, cipher) << std::endl;
+
+	std::string text = decipherTree(node, cipher);
+	writeText(argv[6], text);
+
 	return 0;
 }
