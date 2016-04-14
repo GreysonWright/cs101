@@ -25,12 +25,14 @@ Node::Node(char letter) {
 
 std::string getFileContents(std::string fileName) {
 	std::ifstream file(fileName);
-	std::string line;
+	std::string contents = "";
+	char c;
 
-	getline(file, line);
+	while(file.get(c)) {
+		contents += c;
+	}
 	file.close();
-
-	return line;
+	return contents;
 }
 
 int search(std::string str, int head, int tail, char c) {
@@ -187,7 +189,11 @@ std::string decipherTree(Node *node, std::string &cipher) {
 	std::string decipher = "";
 
 	for (unsigned int i = 0; i < cipher.size(); ++i) {
-		if (cipher[i] == '0' && currNode->left) {
+		if (cipher[i] == '\n') {
+			decipher += currNode->letter;
+			currNode = node;
+			decipher += '\n';
+		} else if (cipher[i] == '0' && currNode->left) {
 			currNode = currNode->left;
 		} else if (cipher[i] == '1' && currNode->right){
 			currNode = currNode->right;
@@ -197,15 +203,13 @@ std::string decipherTree(Node *node, std::string &cipher) {
 			currNode = node;
 		}
 	}
-	decipher += currNode->letter;
-	currNode = node;
 
 	return decipher;
 }
 
 void writeText(std::string fileName, std::string text) {
 	std::ofstream file(fileName);
-	file << text << std::endl;
+	file << text;
 	file.close();
 }
 
@@ -213,11 +217,10 @@ int main(int argc, char const **argv) {
 	std::string str1 = getFileContents(argv[1]);
 	std::string str2 = getFileContents(argv[2]);
 	std::string cipher = getFileContents(argv[3]);
-	std::string arg1 = argv[1];
 	int index = 0;
 	Node *node;
 
-	if (!arg1.find("preorder")) {
+	if (str1[0] == str2[str2.length() - 1]) {
 		node = generateTreePrePost(str1, str2, &index, 0, str1.length() - 1, str1.length());
 	} else {
 		node = generateTreeInLevel(str1, str2, 0, str1.length() - 1, str1.length());
