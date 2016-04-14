@@ -213,9 +213,21 @@ void writeText(std::string fileName, std::string text) {
 	file.close();
 }
 
+std::string removeBreaks(std::string str) {
+	std::string newStr = "";
+
+	for (char c : str) {
+		if (c != '\n') {
+			newStr += c;
+		}
+	}
+
+	return newStr;
+}
+
 int main(int argc, char const **argv) {
-	std::string str1 = getFileContents(argv[1]);
-	std::string str2 = getFileContents(argv[2]);
+	std::string str1 = removeBreaks(getFileContents(argv[1]));
+	std::string str2 = removeBreaks(getFileContents(argv[2]));
 	std::string cipher = getFileContents(argv[3]);
 	int index = 0;
 	Node *node;
